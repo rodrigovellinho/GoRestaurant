@@ -3,10 +3,25 @@ import { Container } from "./styles";
 import api from "../../services/api";
 import { useState } from "react";
 
-function Food({ food, handleDelete, handleEditFood }) {
+interface FoodProps {
+  id: number;
+  image: string;
+  name: string;
+  description: string;
+  price: string;
+  available: boolean;
+}
+
+interface ComponentFoodProps {
+  food: FoodProps;
+  handleDelete: (id: number) => {};
+  handleEditFood: (food: FoodProps) => void;
+}
+
+function Food({ food, handleDelete, handleEditFood }: ComponentFoodProps) {
   const [isAvailable, setIsAvailable] = useState(food.available);
 
-  const toggleAvailable = async () => {
+  const toggleAvailable = async (): Promise<void> => {
     await api.put(`/foods/${food.id}`, {
       ...food,
       available: !isAvailable,
@@ -15,8 +30,8 @@ function Food({ food, handleDelete, handleEditFood }) {
     setIsAvailable(!isAvailable);
   };
 
-  const setEditingFood = () => {
-    handleEditFood(food.id);
+  const setEditingFood = (): void => {
+    handleEditFood(food);
   };
 
   return (

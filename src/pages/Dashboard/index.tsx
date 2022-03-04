@@ -6,14 +6,23 @@ import ModalEditFood from "../../components/ModalEditFood";
 import { FoodsContainer } from "./styles";
 import { useState, useEffect } from "react";
 
+interface FoodProps {
+  id: number;
+  name: string;
+  description: string;
+  price: string;
+  available: boolean;
+  image: string;
+}
+
 function Dashboard() {
-  const [foods, setFoods] = useState([]);
-  const [editingFood, setEditingFood] = useState({});
+  const [foods, setFoods] = useState<FoodProps[]>([]);
+  const [editingFood, setEditingFood] = useState({} as FoodProps);
   const [modalOpen, setModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
 
   useEffect(() => {
-    async function fetchFoods() {
+    async function fetchFoods(): Promise<void> {
       const response = await api.get("/foods");
       setFoods(response.data);
     }
@@ -21,8 +30,11 @@ function Dashboard() {
     fetchFoods();
   }, [foods]);
 
-  const handleAddFood = async ({ name, image, price, description }) => {
+  const handleAddFood = async (
+    food: Omit<FoodProps, "id" | "available">
+  ): Promise<void> => {
     try {
+      const { name, description, image, price } = food;
       const response = await api.post("/foods", {
         name,
         description,
@@ -39,11 +51,17 @@ function Dashboard() {
     }
   };
 
-  const handleUpdateFood = async (food) => {
+  const handleUpdateFood = async (
+    food: Omit<FoodProps, "id" | "available">
+  ): Promise<void> => {
+    const { name, description, price, image } = food;
+    const { id } = editingFood;
     try {
-      const foodUpdated = await api.put(`/foods/${editingFood.id}`, {
-        ...editingFood,
-        ...food,
+      const foodUpdated = await api.put(`/foods/${id}`, {
+        name,
+        description,
+        price,
+        image,
       });
 
       const foodsUpdated = foods.map((f) =>
@@ -56,7 +74,7 @@ function Dashboard() {
     }
   };
 
-  const handleDeleteFood = async (id) => {
+  const handleDeleteFood = async (id: number): Promise<void> => {
     await api.delete(`/foods/${id}`);
 
     const foodsFiltered = foods.filter((food) => food.id !== id);
@@ -64,15 +82,15 @@ function Dashboard() {
     setFoods(foodsFiltered);
   };
 
-  const toggleModal = () => {
+  const toggleModal = (): void => {
     setModalOpen(!modalOpen);
   };
 
-  const toggleEditModal = () => {
+  const toggleEditModal = (): void => {
     setEditModalOpen(!editModalOpen);
   };
 
-  const handleEditFood = (food) => {
+  const handleEditFood = (food: FoodProps): void => {
     setEditingFood(food);
     setEditModalOpen(true);
   };
